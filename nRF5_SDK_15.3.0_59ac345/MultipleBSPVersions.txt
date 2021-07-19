@@ -1,0 +1,2 @@
+This directory contains multiple BSP versions, each one under a separate directory.
+This file tells VisualGDB to load BSPs from those subdirectories. Do not remove it.
