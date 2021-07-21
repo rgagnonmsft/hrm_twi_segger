@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 - 2019, Nordic Semiconductor ASA
+ * Copyright (c) 2014 - 2020, Nordic Semiconductor ASA
  *
  * All rights reserved.
  *
@@ -82,7 +82,45 @@
 #include "nrf_log_default_backends.h"
 
 
-#define DEVICE_NAME                         "Nordic_HRM"                            /**< Name of device. Will be included in the advertising data. */
+
+/*TWI Interface*/
+#include "nrf_drv_twi.h"
+
+
+/*TWIM Interface*/
+#define TWI_INSTANCE_ID     0
+
+/* Common addresses definition for temperature sensor. */
+#define LM75B_ADDR          0x18 //0x19 for LIS3DH eval// for SA0 tied to 1 on LIS3DH eval board //orig: (0x90U >> 1)
+
+#define LM75B_REG_TEMP      0x00U
+#define LM75B_REG_CONF      0x01U
+#define LM75B_REG_THYST     0x02U
+#define LM75B_REG_TOS       0x03U
+#define LIS3DH_WHO_AM_I     0x0FU
+#define LIS3DH_OUT_X_L      0x28U
+#define LIS3DH_OUT_X_H      0x29U
+#define LIS3DH_OUT_Y_L      0x2AU
+#define LIS3DH_OUT_Y_H      0x2BU
+#define LIS3DH_OUT_Z_L      0x2CU
+#define LIS3DH_OUT_Z_H      0x2DU
+#define LIS3DH_CTRL_REG4    0x23U
+#define LIS3DH_CTRL_REG1    0x20U
+
+/* Mode for LM75B. */
+#define NORMAL_MODE 0U
+
+/* Indicates if operation on TWI has ended. */
+static volatile bool m_xfer_done = false;
+
+/* TWI instance. */
+static const nrf_drv_twi_t m_twi = NRF_DRV_TWI_INSTANCE(TWI_INSTANCE_ID);
+
+/* Buffer for samples read from temperature sensor. */
+static uint8_t m_sample;
+
+
+#define DEVICE_NAME                         "Smart Jersey Accel"                            /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME                   "NordicSemiconductor"                   /**< Manufacturer. Will be passed to Device Information Service. */
 #define APP_ADV_INTERVAL                    300                                     /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
 
@@ -274,6 +312,8 @@ static void battery_level_meas_timeout_handler(void * p_context)
  * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
  *                       app_start_timer() call to the timeout handler.
  */
+
+void LIS3DH_read_one_byte(void);
 static void heart_rate_meas_timeout_handler(void * p_context)
 {
     static uint32_t cnt = 0;
@@ -282,10 +322,14 @@ static void heart_rate_meas_timeout_handler(void * p_context)
 
     UNUSED_PARAMETER(p_context);
 
+	
     heart_rate = (uint16_t)sensorsim_measure(&m_heart_rate_sim_state, &m_heart_rate_sim_cfg);
 
+	LIS3DH_read_one_byte();
+	uint16_t heart_rate_cast = (uint16_t)m_sample;
+	NRF_LOG_INFO("in timeout hander: %d %d", heart_rate_cast, m_sample);
     cnt++;
-    err_code = ble_hrs_heart_rate_measurement_send(&m_hrs, heart_rate);
+	err_code = ble_hrs_heart_rate_measurement_send(&m_hrs, heart_rate_cast); //heart_rate);
     if ((err_code != NRF_SUCCESS) &&
         (err_code != NRF_ERROR_INVALID_STATE) &&
         (err_code != NRF_ERROR_RESOURCES) &&
@@ -927,6 +971,146 @@ static void power_management_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------------------- TWIM start
+
+
+
+
+/**
+ * @brief Function for setting active mode on MMA7660 accelerometer.
+ */
+void LM75B_set_mode(void)
+{
+	ret_code_t err_code;
+
+	/* Writing to LM75B_REG_CONF "0" set temperature sensor in NORMAL mode. */
+	uint8_t reg[2] = { LM75B_REG_CONF, NORMAL_MODE };
+	err_code = nrf_drv_twi_tx(&m_twi, LM75B_ADDR, reg, sizeof(reg), false);
+	//NRF_LOG_INFO("before inf loop %d", LM75B_ADDR);
+	APP_ERROR_CHECK(err_code);
+	while (m_xfer_done == false) ;
+	//NRF_LOG_INFO("after inf loop");
+
+	/* Writing to pointer byte. */
+	reg[0] = LM75B_REG_TEMP;
+	m_xfer_done = false;
+	err_code = nrf_drv_twi_tx(&m_twi, LM75B_ADDR, reg, 1, false);
+	APP_ERROR_CHECK(err_code);
+	while (m_xfer_done == false) ;
+}
+
+int count = 0;
+ret_code_t err_code_readbyte;
+uint8_t reg_readbyte[1] = { LIS3DH_OUT_Z_L };
+
+void LIS3DH_read_one_byte()
+{
+	
+	
+	m_xfer_done = false;
+	err_code_readbyte = nrf_drv_twi_tx(&m_twi, LM75B_ADDR, reg_readbyte, 1, true);
+	while (!m_xfer_done) ;
+	m_xfer_done = false;
+	err_code_readbyte = nrf_drv_twi_rx(&m_twi, LM75B_ADDR, &m_sample, sizeof(m_sample));
+	while (!m_xfer_done) ;
+	if (err_code_readbyte == NRFX_SUCCESS)
+	{
+		NRF_LOG_INFO("%d", m_sample);
+		
+	}
+	
+}
+
+uint8_t reg_set_mode[2] = { LIS3DH_CTRL_REG1, 0xE4U }; //0xE4 puts it in 50Hz, high-res/normal mode with all axes enabled
+
+void LIS3DH_set_mode(void)
+{
+	m_xfer_done = false;
+	err_code_readbyte = nrf_drv_twi_tx(&m_twi, LM75B_ADDR, reg_set_mode, 2, false);
+	while (!m_xfer_done) ;
+	//m_xfer_done = false;
+	//err_code_readbyte = nrf_drv_twi_tx(&m_twi, LM75B_ADDR, &m_sample, sizeof(m_sample));
+	//while (!m_xfer_done) ;
+	if (err_code_readbyte == NRFX_SUCCESS)
+	{
+		NRF_LOG_INFO("%d", m_sample);
+		
+	}
+}
+
+/**
+ * @brief Function for handling data from temperature sensor.
+ *
+ * @param[in] temp          Temperature in Celsius degrees read from sensor.
+ */
+__STATIC_INLINE void data_handler(uint8_t temp)
+{
+	NRF_LOG_INFO("Temperature: %d Celsius degrees.", temp);
+}
+
+/**
+ * @brief TWI events handler.
+ */
+void twi_handler(nrf_drv_twi_evt_t const * p_event, void * p_context)
+{
+	switch (p_event->type)
+	{
+	case NRF_DRV_TWI_EVT_DONE:
+		if (p_event->xfer_desc.type == NRF_DRV_TWI_XFER_RX || p_event->xfer_desc.type == NRF_DRV_TWI_XFER_TXRX)
+		{
+			data_handler(m_sample);
+		}
+		m_xfer_done = true;
+		break;
+	default:
+		break;
+	}
+}
+
+/**
+ * @brief UART initialization.
+ */
+void twi_init(void)
+{
+	ret_code_t err_code;
+
+	const nrf_drv_twi_config_t twi_lm75b_config = {
+		.scl = ARDUINO_SCL_PIN,
+		.sda = ARDUINO_SDA_PIN,
+		.frequency = NRF_DRV_TWI_FREQ_100K,
+		.interrupt_priority = APP_IRQ_PRIORITY_HIGH,
+		.clear_bus_init = false
+	};
+
+	err_code = nrf_drv_twi_init(&m_twi, &twi_lm75b_config, twi_handler, NULL);
+	APP_ERROR_CHECK(err_code);
+
+	nrf_drv_twi_enable(&m_twi);
+}
+
+/**
+ * @brief Function for reading data from temperature sensor.
+ */
+static void read_sensor_data()
+{
+	m_xfer_done = false;
+
+	/* Read 1 byte from the specified address - skip 3 bits dedicated for fractional part of temperature. */
+	ret_code_t err_code = nrf_drv_twi_rx(&m_twi, LM75B_ADDR, &m_sample, sizeof(m_sample));
+	APP_ERROR_CHECK(err_code);
+}
+
+/**
+ * @brief Function for main application entry.
+ */
+
+
+/**@brief Function for handling the idle state (main loop).
+ *
+ * @details If there is no pending log operation, then sleep until next the next event occurs.
+ */
+
+//----------------------------------------------------------------------------------------------------------------------------------------------- TWIM end
 
 /**@brief Function for handling the idle state (main loop).
  *
@@ -945,6 +1129,21 @@ static void idle_state_handle(void)
     }
 }
 
+
+void SmartJerseyGPIOInit(void)
+{
+#ifdef SMART_JERSEY_REV_E
+	nrf_gpio_cfg_output(LED_BLUE);
+	nrf_gpio_pin_clear(LED_BLUE);
+	
+	//nrf_gpio_cfg_output(EN_5P0);
+	//nrf_gpio_pin_set(EN_5P0);
+	
+	//nrf_gpio_cfg_output(BADGE_PWR_ENABLEn);
+	//nrf_gpio_pin_set(BADGE_PWR_ENABLEn);
+#endif
+	
+}
 
 /**@brief Function for application main entry.
  */
@@ -966,6 +1165,12 @@ int main(void)
     conn_params_init();
     peer_manager_init();
 
+	twi_init();
+	//LM75B_set_mode();
+	SmartJerseyGPIOInit();
+	LIS3DH_set_mode();
+
+	
     // Start execution.
     NRF_LOG_INFO("Heart Rate Sensor example started.");
     application_timers_start();
