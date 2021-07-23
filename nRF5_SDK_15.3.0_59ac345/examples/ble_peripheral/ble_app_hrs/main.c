@@ -81,7 +81,7 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
-
+#include "i2sHelpers.h"
 
 /*TWI Interface*/
 #include "nrf_drv_twi.h"
@@ -1165,11 +1165,12 @@ int main(void)
     conn_params_init();
     peer_manager_init();
 
-	twi_init();
-	//LM75B_set_mode();
-	SmartJerseyGPIOInit();
-	LIS3DH_set_mode();
-
+    twi_init();
+    //LM75B_set_mode();
+    SmartJerseyGPIOInit();
+    LIS3DH_set_mode();
+    i2s_init();
+    i2s_transfer();
 	
     // Start execution.
     NRF_LOG_INFO("Heart Rate Sensor example started.");

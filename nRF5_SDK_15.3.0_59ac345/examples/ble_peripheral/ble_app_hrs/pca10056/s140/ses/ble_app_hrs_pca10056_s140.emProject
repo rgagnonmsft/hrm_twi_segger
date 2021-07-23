@@ -91,6 +91,7 @@
       <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_twi.c" />
       <file file_name="../../../../../../modules/nrfx/soc/nrfx_atomic.h" />
       <file file_name="../../../../../../integration/nrfx/legacy/nrf_drv_twi.c" />
+      <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_i2s.c" />
     </folder>
     <folder Name="Board Definition">
       <file file_name="../../../../../../components/boards/boards.c" />
@@ -129,6 +130,8 @@
     <folder Name="Application">
       <file file_name="../../../main.c" />
       <file file_name="../config/sdk_config.h" />
+      <file file_name="i2sHelpers.c" />
+      <file file_name="i2sHelpers.h" />
     </folder>
     <folder Name="nRF_Segger_RTT">
       <file file_name="../../../../../../external/segger_rtt/SEGGER_RTT.c" />
