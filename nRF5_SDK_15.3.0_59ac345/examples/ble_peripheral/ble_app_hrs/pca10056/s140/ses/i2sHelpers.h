@@ -27,6 +27,11 @@ void i2s_init(void);
 
 void i2s_transfer(void);
 
+void FillI2SDriverBuffer(void);
+
+void neopixelWrite(void);
+
+
 #define LED_OK      BSP_BOARD_LED_0
 #define LED_ERROR   BSP_BOARD_LED_1
 
@@ -51,3 +56,22 @@ static uint32_t const * volatile mp_block_to_check = NULL;
 
 #define I2S_SDIN_PIN 11 //not necessary for smart jersey- using i2s out only
 #define I2S_SDOUT_PIN BADGE_DATA_3P3 //for smart jersey
+
+//Neopixel specific:
+#define RESET_BITS 6
+#define I2S_WS2812B_DRIVE_PATTERN_0			((uint8_t)0x08)			// Bit pattern for data "0" is "HLLL".
+#define I2S_WS2812B_DRIVE_PATTERN_1			((uint8_t)0x0e)      // Bit pattern for data "1" is "HHHL".
+#define	I2S_WS2812B_DRIVE_BUF_SIZE_PER_LED	(12)	// buffer size for each LED (8bit * 4 * 3 )
+
+typedef struct 
+{
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+} LEDDRIVERPIXEL;
+
+LEDDRIVERPIXEL	*m_pPixels;
+uint32_t *m_pTXBuffer;
+uint16_t m_numPixels = 3;
+uint8_t	m_brightness;
+uint16_t m_i2sBufferSize;

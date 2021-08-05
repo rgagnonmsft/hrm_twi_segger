@@ -1145,6 +1145,10 @@ void SmartJerseyGPIOInit(void)
 	
 }
 
+//Neopixel stuff
+extern LEDDRIVERPIXEL *m_pPixels;
+
+
 /**@brief Function for application main entry.
  */
 int main(void)
@@ -1170,8 +1174,9 @@ int main(void)
     SmartJerseyGPIOInit();
     LIS3DH_set_mode();
     i2s_init();
-    i2s_transfer();
-	
+    //i2s_transfer();
+    neopixelWrite();
+    
     // Start execution.
     NRF_LOG_INFO("Heart Rate Sensor example started.");
     application_timers_start();

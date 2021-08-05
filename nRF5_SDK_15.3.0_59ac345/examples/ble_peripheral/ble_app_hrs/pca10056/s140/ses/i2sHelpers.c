@@ -31,7 +31,11 @@ extern uint16_t         m_sample_value_expected;
 extern bool             m_error_encountered;
 extern uint32_t       * volatile mp_block_to_fill;
 extern uint32_t const * volatile mp_block_to_check;
-
+extern LEDDRIVERPIXEL *m_pPixels;
+extern uint32_t *m_pTXBuffer;
+extern uint8_t	m_brightness;
+extern uint16_t m_i2sBufferSize;
+extern uint16_t m_numPixels;
 
 static void prepare_tx_data(uint32_t * p_block)
 {
@@ -186,7 +190,14 @@ void i2s_init(void)
     uint32_t err_code = NRF_SUCCESS;
     NRF_LOG_INFO("I2S loopback example started.");
 
+    m_pTXBuffer = (uint32_t *) malloc(sizeof(uint32_t) * m_i2sBufferSize);	
+
     nrf_drv_i2s_config_t config = NRF_DRV_I2S_DEFAULT_CONFIG;
+
+    m_pPixels->r = 0xFF; //test pink led
+    m_pPixels->g = 0xC0;
+    m_pPixels->b = 0xCB;
+
     // In Master mode the MCK frequency and the MCK/LRCK ratio should be
     // set properly in order to achieve desired audio sample rate (which
     // is equivalent to the LRCK frequency).
@@ -315,3 +326,52 @@ int main(void)
 }
 */
 /** @} */
+
+
+void FillI2SDriverBuffer(void)
+{
+	LEDDRIVERPIXEL*pPixel = m_pPixels;
+	int8_t offset = 1;
+	uint8_t *pTX = (uint8_t *) m_pTXBuffer;
+		
+	for (uint16_t iPixel = 0; iPixel < m_numPixels; iPixel++)
+	{
+		uint32_t rgb = (((pPixel->g * m_brightness) >> 8) << 16) | (((pPixel->r * m_brightness) >> 8) << 8) | ((pPixel->b * m_brightness) >> 8);
+		for (uint8_t i_rgb = 0; i_rgb < I2S_WS2812B_DRIVE_BUF_SIZE_PER_LED; i_rgb++)
+		{
+			switch (rgb & 0x00c00000)
+			{
+			case (0x00400000):
+				*(pTX + offset)  = (uint8_t)((I2S_WS2812B_DRIVE_PATTERN_0 << 4) | I2S_WS2812B_DRIVE_PATTERN_1);
+				break;
+			case (0x00800000):
+				*(pTX + offset)  = (uint8_t)((I2S_WS2812B_DRIVE_PATTERN_1 << 4) | I2S_WS2812B_DRIVE_PATTERN_0);
+				break;
+			case (0x00c00000):
+				*(pTX + offset)  = (uint8_t)((I2S_WS2812B_DRIVE_PATTERN_1 << 4) | I2S_WS2812B_DRIVE_PATTERN_1);
+				break;
+			default:
+				*(pTX + offset)  = (uint8_t)((I2S_WS2812B_DRIVE_PATTERN_0 << 4) | I2S_WS2812B_DRIVE_PATTERN_0);
+				break;
+			}
+			pTX++;
+			offset = -offset;
+			rgb <<= (24 / I2S_WS2812B_DRIVE_BUF_SIZE_PER_LED);
+		}
+		pPixel++;
+	}
+}
+
+void neopixelWrite() 
+{
+  m_i2sBufferSize = 3 * m_numPixels + RESET_BITS;
+
+  FillI2SDriverBuffer();
+  
+  nrfx_i2s_buffers_t buffers;
+  buffers.p_rx_buffer = NULL;
+  buffers.p_tx_buffer = (uint32_t *) m_pTXBuffer;	
+
+  nrf_drv_i2s_start(&buffers, m_i2sBufferSize, 0);
+
+}
