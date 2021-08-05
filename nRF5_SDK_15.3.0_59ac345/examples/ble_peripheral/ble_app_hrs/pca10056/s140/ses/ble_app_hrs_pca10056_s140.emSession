@@ -1,56 +1,7 @@
 <!DOCTYPE CrossStudio_Session_File>
 <session>
- <Bookmarks/>
- <Breakpoints groups="Breakpoints" active_group="Breakpoints"/>
- <ExecutionProfileWindow/>
- <FrameBufferWindow>
-  <FrameBufferWindow bufferHeight="-1" addressSpace="" addressText="" bufferWidth="-1"/>
- </FrameBufferWindow>
- <Memory1/>
- <Memory2/>
- <Memory3/>
- <Memory4/>
- <Project>
-  <ProjectSessionItem path="ble_app_hrs_pca10056_s140"/>
-  <ProjectSessionItem path="ble_app_hrs_pca10056_s140;ble_app_hrs_pca10056_s140"/>
-  <ProjectSessionItem path="ble_app_hrs_pca10056_s140;ble_app_hrs_pca10056_s140;nRF_Drivers"/>
-  <ProjectSessionItem path="ble_app_hrs_pca10056_s140;ble_app_hrs_pca10056_s140;Board Support"/>
-  <ProjectSessionItem path="ble_app_hrs_pca10056_s140;ble_app_hrs_pca10056_s140;Board Definition"/>
-  <ProjectSessionItem path="ble_app_hrs_pca10056_s140;ble_app_hrs_pca10056_s140;Application"/>
- </Project>
- <Register1/>
- <Register2/>
- <Register3/>
- <Register4/>
- <Threads>
-  <ThreadsWindow showLists=""/>
- </Threads>
- <TraceWindow>
-  <Trace enabled="Yes"/>
- </TraceWindow>
- <Watch1>
-  <Watches active="1" update="Never"/>
- </Watch1>
- <Watch2>
-  <Watches active="0" update="Never"/>
- </Watch2>
- <Watch3>
-  <Watches active="0" update="Never"/>
- </Watch3>
- <Watch4>
-  <Watches active="0" update="Never"/>
- </Watch4>
- <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="24" y="69" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../main.c" selected="0" top="45" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="22" y="597" useTextEdit="1" openedFrom="C:/Users/regagnon/HWLAB/BrookdaleV2/firmware/hrs_twi_segger/nRF5_SDK_15.3.0_59ac345/examples/ble_peripheral/ble_app_hrs/main.c" useBinaryEdit="0" left="0" path="../../../../../../integration/nrfx/legacy/nrf_drv_twi.h" selected="0" top="577" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="16" y="5748" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../config/sdk_config.h" selected="1" top="5722" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="9" y="39" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="nrfx_atomic.c" selected="0" top="18" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="17" y="43" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../modules/nrfx/soc/nrfx_atomic.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="21" y="46" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="nrfx_prs.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="25" y="52" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="nrfx_uarte.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="21" y="42" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../modules/nrfx/drivers/src/nrfx_twi.c" selected="0" top="34" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="24" y="1115" useTextEdit="1" openedFrom="C:/Users/regagnon/HWLAB/BrookdaleV2/firmware/hrs_twi_segger/nRF5_SDK_15.3.0_59ac345/modules/nrfx/drivers/src/nrfx_twi.c" useBinaryEdit="0" left="0" path="../../../../../../integration/nrfx/legacy/apply_old_config.h" selected="0" top="1089" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="19" y="210" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../modules/nrfx/mdk/nrf52840_peripherals.h" selected="0" top="178" codecName="Default"/>
- </Files>
- <ARMCrossStudioWindow activeProject="ble_app_hrs_pca10056_s140" fileDialogDefaultFilter="*.c;*.cpp;*.cxx;*.cc;*.h;*.hpp;*.hxx" autoConnectTarget="J-Link" buildConfiguration="Release" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="C:/Users/regagnon/HWLAB/BrookdaleV2/firmware/hrs_twi_segger/nRF5_SDK_15.3.0_59ac345/modules/nrfx/soc" debugSearchPath="" autoConnectCapabilities="3199"/>
+  <ARMCrossStudioWindow activeProject="ble_app_hrs_pca10056_s140" buildConfiguration="Release"/>
+  <Files>
+    <SessionOpenFile codecName="Default" debugPath="../../../main.c" left="0" name="unnamed" path="../../../main.c" selected="1" top="0" useBinaryEdit="0" useTextEdit="1" x="0" y="0"/>
+  </Files>
 </session>
